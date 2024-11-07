@@ -1,0 +1,39 @@
+import discord
+from discord.ext import commands
+import os
+from dotenv import load_dotenv
+import traceback
+load_dotenv()
+
+intents = discord.Intents.default()
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+TOKEN = os.getenv('TOKEN')
+APPLICATION_ID = os.getenv('CLIENT_ID')
+
+@bot.event
+async def on_ready():
+    print(f"{bot.user.name} is Online!")
+    try:
+        await load()
+    except Exception as e:
+        print(f"読み込み失敗: {e}")
+        traceback.print_exc()
+
+async def load():
+    for filename in os.listdir("./slash"):
+        if filename.endswith(".py"):
+            try:
+                await bot.load_extension(f"slash.{filename[:-3]}")
+            except Exception as e:
+                print(f"slash/{filename}読み込み失敗: {e}")
+                traceback.print_exc()
+    for filename in os.listdir("./events"):
+        if filename.endswith(".py"):
+            try:
+                await bot.load_extension(f"events.{filename[:-3]}")
+            except Exception as e:
+                print(f"events/{filename}読み込み失敗: {e}")
+                traceback.print_exc()
+
+bot.run(TOKEN)
